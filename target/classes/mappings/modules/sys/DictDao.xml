@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.edu.ahpu.ssmas.modules.sys.dao.DictDao">
+    
+	<select id="get" resultType="Dict">
+		SELECT 
+			d.id,
+			d.value,
+			d.label,
+			c.id as "category.id",
+			c.type as "category.type",
+			c.name as "category.name",
+			d.description ,
+			d.sort,
+			d.remarks,
+			d.del_flag	
+		FROM sys_dict d JOIN sys_dict_category c ON d.category = c.id
+		WHERE d.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="Dict">
+		SELECT 
+			d.id,
+			d.value,
+			d.label,
+			c.id as "category.id",
+			c.type as "category.type",
+			c.name as "category.name",
+			d.description ,
+			d.sort,
+			d.remarks,
+			d.del_flag	
+		FROM sys_dict d JOIN sys_dict_category c ON d.category = c.id
+		WHERE d.del_flag = #{DEL_FLAG_NORMAL} 
+		<if test="category != null and category != ''">
+			AND d.category = #{category.id}
+		</if>
+		<if test="description != null and description != ''">
+			AND d.description LIKE 
+					<if test="dbName == 'oracle'">'%'||#{description}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{description}+'%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%', #{description}, '%')</if>
+		</if>
+		ORDER BY d.category, d.sort, d.update_date DESC
+	</select>
+	
+	<select id="findAllList" resultType="Dict">
+		SELECT 
+			d.id,
+			d.value,
+			d.label,
+			c.id as "category.id",
+			c.type as "category.type",
+			c.name as "category.name",
+			d.description ,
+			d.sort,
+			d.remarks,
+			d.del_flag
+		FROM sys_dict d JOIN sys_dict_category c ON d.category = c.id
+		WHERE d.del_flag = #{DEL_FLAG_NORMAL} 
+		ORDER BY d.category, d.sort, d.update_date DESC
+	</select>
+	
+	<select id="findTypeList" resultType="string">
+		SELECT 
+			c.type 
+		FROM sys_dict d JOIN sys_dict_category c ON d.category = c.id 
+		WHERE d.del_flag = #{DEL_FLAG_NORMAL} 
+		GROUP BY c.type 
+		ORDER BY c.type 
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_dict(
+			id, 
+			value, 
+			label, 
+			category, 
+			description, 
+			sort, 
+			create_by, 
+			create_date, 
+			update_by, 
+			update_date, 
+			remarks, 
+			del_flag
+		) VALUES (
+			#{id}, 
+			#{value}, 
+			#{label}, 
+			#{category.id}, 
+			#{description}, 
+			#{sort}, 
+			#{createBy.id}, 
+			#{createDate}, 
+			#{updateBy.id}, 
+			#{updateDate}, 
+			#{remarks}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_dict SET 
+			value = #{value}, 
+			label = #{label}, 
+			category = #{category.id}, 
+			description = #{description}, 
+			sort = #{sort}, 
+			update_by = #{updateBy.id}, 
+			update_date = #{updateDate}, 
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE sys_dict SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>
